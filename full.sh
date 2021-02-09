@@ -2,15 +2,29 @@
 FILECACHE=filecache
 CLEAN_SITE=$(echo $1 | sed 's/[^A-Za-z0-9]//g');
 CMP_DIR=$FILECACHE/$CLEAN_SITE;
-OLD_FILE=old
-NEW_FILE=new
+OLD_FILE=$CMP_DIR/old
+NEW_FILE=$CMP_DIR/new
 
 mkdir -p $FILECACHE;
 mkdir -p $CMP_DIR;
-touch $CMP_DIR/$OLD_FILE;
+touch $OLD_FILE;
 
 # Copy contents of site to local cache
-curl $1 > $CMP_DIR/$NEW_FILE;
+curl $1 > $NEW_FILE;
 
 # Compare the new and old files and email if necessary
-cmp $CMP_DIR/$NEW_FILE $CMP_DIR/$OLD_FILE || (node index.js $1 $2 && mv $CMP_DIR/$NEW_FILE $CMP_DIR/$OLD_FILE);
+if [ -s $OLD_FILE ]
+then
+  echo "Comapring versions of $1"
+  if [ -n "$(cmp $NEW_FILE $OLD_FILE)" ]
+  then
+    echo "Versions were different";
+    node index.js $1 $2;
+  else
+    echo "Versions were the same";
+  fi
+else
+  echo "No old version found for $1"
+fi
+
+mv $NEW_FILE $OLD_FILE;
