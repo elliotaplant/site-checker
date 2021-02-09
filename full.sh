@@ -16,7 +16,8 @@ curl $1 > $NEW_FILE;
 if [ -s $OLD_FILE ]
 then
   echo "Comapring versions of $1"
-  if [ -n "$(cmp $NEW_FILE $OLD_FILE)" ]
+  # if [ -n "$(cmp $NEW_FILE $OLD_FILE)" ]
+  if ! cmp $OLD_FILE $NEW_FILE > /dev/null 2>&1
   then
     echo "Versions were different";
     node index.js $1 $2;
